@@ -7,8 +7,9 @@ namespace ReviewApp.Interfaces
         ICollection<Pokemon> GetPokemons();
         Pokemon GetPokemon(int id);
         Pokemon GetPokemon(string name);
-        Pokemon GetPokemon(Pokemon pokemon);
         decimal GetPokemonRating(int pokeId);
         bool PokemonExists(int pokeId);
+        bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon);
+        bool Save();
     }
 }

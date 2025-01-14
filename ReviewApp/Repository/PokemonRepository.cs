@@ -7,42 +7,64 @@ namespace ReviewApp.Repository
     public class PokemonRepository : IPokemonRepository
 
     {
-        private readonly DatabaseContext _databaseContext;
+        private readonly DatabaseContext _context;
         public PokemonRepository(DatabaseContext context)
         {
-            _databaseContext = context;
+            _context = context;
         }
 
         public Pokemon GetPokemon(int id)
         {
-            return _databaseContext.Pokemon.Where(p => p.Id == id).FirstOrDefault();
+            return _context.Pokemon.Where(p => p.Id == id).FirstOrDefault();
         }
 
         public Pokemon GetPokemon(string name)
         {
-            return _databaseContext.Pokemon.Where(p => p.Name == name).FirstOrDefault();
+            return _context.Pokemon.Where(p => p.Name == name).FirstOrDefault();
         }
 
         public decimal GetPokemonRating(int pokeId)
         {
-            var review = _databaseContext.Reviews.Where(p => p.Pokemon.Id == pokeId);
+            var review = _context.Reviews.Where(p => p.Pokemon.Id == pokeId);
             if (review.Count() <= 0)
                 return 0;
             return ((decimal)review.Sum(r => r.Rating) / review.Count());
         }
         public bool PokemonExists(int pokeId)
         {
-            return _databaseContext.Pokemon.Any(p => p.Id == pokeId);
-        }
-        public Pokemon GetPokemon(Pokemon pokemon)
-        {
-            throw new NotImplementedException();
+            return _context.Pokemon.Any(p => p.Id == pokeId);
         }
 
         public ICollection<Pokemon> GetPokemons()
         {
-            return _databaseContext.Pokemon.OrderBy(p => p.Id).ToList();
+            return _context.Pokemon.OrderBy(p => p.Id).ToList();
         }
 
+        public bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon)
+        {
+            var pokemonOwnerEntity = _context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
+            var category = _context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
+            var pokemonOwner = new PokemonOwner()
+            { 
+                Owner = pokemonOwnerEntity,
+                Pokemon = pokemon
+            };
+            _context.Add(pokemonOwner);
+
+            var pokemonCategory = new PokemonCategory()
+            {
+                Category = category,
+                Pokemon = pokemon,
+            };
+
+            _context.Add(pokemonCategory);
+            _context.Add(pokemon);
+            return Save();
+        }
+        public bool Save()
+        {
+            var saved = _context.SaveChanges();
+            return saved > 0 ? true : false;
+        }
     }
 }
