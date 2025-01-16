@@ -46,5 +46,10 @@ namespace ReviewApp.Repository
             return saved > 0 ? true : false;
         }
 
+        public bool UpdateReview(int pokemonId, int reviewerId, Review review)
+        {
+            _context.Update(review);
+            return Save();
+        }
     }
 }

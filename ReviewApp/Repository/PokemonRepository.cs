@@ -43,7 +43,8 @@ namespace ReviewApp.Repository
         public bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon)
         {
             var pokemonOwnerEntity = _context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
-            var category = _context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
+            var pokemoncCategoryEntity = _context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
+
             var pokemonOwner = new PokemonOwner()
             { 
                 Owner = pokemonOwnerEntity,
@@ -53,7 +54,7 @@ namespace ReviewApp.Repository
 
             var pokemonCategory = new PokemonCategory()
             {
-                Category = category,
+                Category = pokemoncCategoryEntity,
                 Pokemon = pokemon,
             };
 
@@ -65,6 +66,34 @@ namespace ReviewApp.Repository
         {
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
+        }
+
+        public bool UpdatePokemon(int ownerId, int categoryId, Pokemon pokemon)
+        {
+
+            //var ownerEntity = _context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
+            //var categoryEntity = _context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
+            //var pokemonOwner = new PokemonOwner()
+            //{
+            //    Owner = ownerEntity,
+            //    OwnerId = ownerEntity.Id,
+            //    Pokemon = pokemon,
+            //};
+
+            //_context.Update(pokemonOwner);
+           
+            //var pokemonCategory = new PokemonCategory()
+            //{
+                
+            //    Category = categoryEntity,
+            //    CategoryId = categoryEntity.Id,
+            //    Pokemon = pokemon,
+
+            //};
+            //_context.Update(pokemonCategory);
+            _context.Update(pokemon);
+
+            return Save();
         }
     }
 }

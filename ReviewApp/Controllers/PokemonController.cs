@@ -12,15 +12,20 @@ namespace ReviewApp.Controllers
     public class PokemonController : Controller
     {
         private readonly IPokemonRepository _pokemonRepository;
+        private readonly IReviewRepository _reviewRepository;
         private readonly IMapper _mapper;
 
-        public PokemonController(IPokemonRepository pokemonRepository, IMapper mapper)
+        public PokemonController(IPokemonRepository pokemonRepository, 
+            IReviewRepository reviewRepository, 
+            ICategoryRepository categoryRepository, 
+            IMapper mapper)
         {
-            this._pokemonRepository = pokemonRepository;
-            this._mapper = mapper;
+            _pokemonRepository = pokemonRepository;
+            _reviewRepository = reviewRepository;
+            _mapper = mapper;
         }
         [HttpGet]
-        [ProducesResponseType(200, Type= typeof(IEnumerable<Pokemon>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Pokemon>))]
         public IActionResult GetPokemons()
         {
             var pokemons = _mapper.Map<List<PokemonDto>>(_pokemonRepository.GetPokemons());
@@ -35,7 +40,7 @@ namespace ReviewApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetPokemon(int pokeId)
         {
-            if (!_pokemonRepository.PokemonExists(pokeId)) 
+            if (!_pokemonRepository.PokemonExists(pokeId))
                 return NotFound();
             var pokemon = _mapper.Map<PokemonDto>(_pokemonRepository.GetPokemon(pokeId));
             if (!ModelState.IsValid)
@@ -76,7 +81,7 @@ namespace ReviewApp.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var pokemonMap = _mapper.Map<Pokemon>(pokemonCreate); 
+            var pokemonMap = _mapper.Map<Pokemon>(pokemonCreate);
 
             if (!_pokemonRepository.CreatePokemon(ownerId, categoryId, pokemonMap))
             {
@@ -86,5 +91,38 @@ namespace ReviewApp.Controllers
             return Ok("Successfully created");
 
         }
+
+        [HttpPut("{pokeId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdatePokemon(int pokeId, 
+            [FromQuery] int ownerId,
+            [FromQuery] int categoryId,
+            [FromBody]PokemonDto updatePokemon)
+        {
+            if (updatePokemon == null)
+                return BadRequest(ModelState);
+
+            if (pokeId != updatePokemon.Id)
+                return BadRequest(ModelState);
+
+            if (!_pokemonRepository.PokemonExists(pokeId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var mapPokemon = _mapper.Map<Pokemon>(updatePokemon);
+
+            if (!_pokemonRepository.UpdatePokemon(ownerId, categoryId, mapPokemon))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating pokemon");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Pokemon has been successfully updated!");
+
+        }
+
     }
 }

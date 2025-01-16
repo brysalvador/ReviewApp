@@ -1,4 +1,6 @@
-﻿namespace ReviewApp.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ReviewApp.Models
 {
     public class PokemonOwner
     {

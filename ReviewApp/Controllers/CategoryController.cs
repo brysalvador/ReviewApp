@@ -61,13 +61,13 @@ namespace ReviewApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateCategory([FromBody] CategoryDto categoryCreate)
+        public IActionResult CreateCategory([FromBody]CategoryDto createCategory)
         {
-            if (categoryCreate == null)
+            if (createCategory == null)
                 return BadRequest(ModelState);
 
             var category = _categoryRepository.GetCategories()
-                .Where(c => c.Name.Trim().ToUpper() == categoryCreate.Name.TrimEnd().ToUpper())
+                .Where(c => c.Name.Trim().ToUpper() == createCategory.Name.TrimEnd().ToUpper())
                 .FirstOrDefault();
 
             if (category != null)
@@ -79,9 +79,9 @@ namespace ReviewApp.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var categoryMap = _mapper.Map<Category>(categoryCreate);
+            var mapCategory = _mapper.Map<Category>(createCategory);
 
-            if (!_categoryRepository.CreateCategory(categoryMap))
+            if (!_categoryRepository.CreateCategory(mapCategory))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
                 return StatusCode(500, ModelState);
@@ -90,6 +90,35 @@ namespace ReviewApp.Controllers
 
         }
 
-       
+        [HttpPut("{categoryId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCategory(int categoryId, [FromBody]CategoryDto updateCategory)
+        {
+            if (updateCategory == null)
+                return BadRequest(ModelState);
+
+            if (categoryId != updateCategory.Id)
+                return BadRequest(ModelState);
+
+            if (!_categoryRepository.CategoryExist(categoryId))
+                return NotFound();
+            
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var mapCategory = _mapper.Map<Category>(updateCategory);
+
+            if (!_categoryRepository.UpdateCategory(mapCategory))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating category");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Category has been successfully updated!");
+
+        }
+
+
     }
 }
